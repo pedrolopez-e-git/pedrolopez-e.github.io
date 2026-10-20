@@ -10,15 +10,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Roboto+Slab:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f7f0d4;
-      --surface: #fffef6;
-      --ink: #2a2416;
-      --muted: #6d6249;
-      --accent: #a16207;
-      --accent-hover: #854d0e;
-      --accent-soft: #fef3c7;
-      --border: #e6d9a8;
-      --shadow: 0 12px 40px rgba(42, 36, 22, 0.1);
+      --bg: #fdf2f6;
+      --surface: #fffbfc;
+      --ink: #3b1228;
+      --muted: #7a4a62;
+      --accent: #9f1239;
+      --accent-hover: #881337;
+      --accent-soft: #fce7f3;
+      --border: #f0b8cc;
+      --sakura: #f9a8d4;
+      --sakura-deep: #ec4899;
+      --burgundy: #701a3a;
+      --heal: #10b981;
+      --heal-glow: rgba(16, 185, 129, 0.55);
+      --byakugou: #4ade80;
+      --shadow: 0 12px 40px rgba(59, 18, 40, 0.12);
       --radius: 14px;
       --max: 1080px;
       --font-body: "Roboto", system-ui, sans-serif;
@@ -37,9 +43,10 @@
       color: var(--ink);
       background: var(--bg);
       background-image:
-        linear-gradient(rgba(42, 36, 22, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(42, 36, 22, 0.04) 1px, transparent 1px);
-      background-size: 32px 32px;
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(249, 168, 212, 0.35), transparent),
+        linear-gradient(rgba(159, 18, 57, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(159, 18, 57, 0.035) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
     }
 
     a {
@@ -70,7 +77,7 @@
       border-radius: 999px;
       overflow: hidden;
       background: var(--surface);
-      box-shadow: 0 2px 8px rgba(42, 36, 22, 0.08);
+      box-shadow: 0 2px 8px rgba(59, 18, 40, 0.08);
     }
 
     .lang-toggle button {
@@ -181,32 +188,29 @@
     }
 
     .project-card {
+      position: relative;
       display: flex;
       flex-direction: column;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(42, 36, 22, 0.06);
+      box-shadow: 0 4px 20px rgba(59, 18, 40, 0.07);
       text-decoration: none;
       color: inherit;
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      isolation: isolate;
     }
 
-    .project-card:hover {
-      transform: translateY(-3px);
+    .project-card:hover,
+    .project-card:focus-visible {
+      transform: translateY(-4px);
       box-shadow: var(--shadow);
-      border-color: var(--accent);
+      border-color: var(--sakura-deep);
     }
 
-    .project-card--muted {
-      opacity: 0.92;
-    }
-
-    .project-card--muted:hover {
-      border-color: var(--border);
-      transform: none;
-      box-shadow: 0 4px 20px rgba(42, 36, 22, 0.06);
+    .project-card--soon {
+      opacity: 0.95;
     }
 
     .project-card:focus-visible {
@@ -214,9 +218,115 @@
       outline-offset: 3px;
     }
 
+    .card-fx {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      border-radius: inherit;
+    }
+
+    /* Sakura effects: decorative layers never intercept card links. */
+    .card-fx { overflow: hidden; }
+    .project-card-body, .project-thumb { position: relative; z-index: 2; }
+
+    /* 1. Petals travel across the CARD, not a percentage of their own size. */
+    .petal {
+      position: absolute; top: -12%; left: var(--left);
+      width: var(--size, 13px); height: calc(var(--size, 13px) * 1.35);
+      background: linear-gradient(145deg, #fff4f8 5%, #f9a8c7 55%, #df528b);
+      border-radius: 75% 15% 70% 30%; opacity: 0;
+      clip-path: polygon(45% 0, 56% 10%, 70% 3%, 92% 24%, 100% 49%, 83% 78%, 20% 100%, 0 62%, 7% 27%);
+      filter: drop-shadow(0 2px 2px #9f123933);
+    }
+    .project-card--petals:is(:hover, :focus-visible) .petal {
+      animation: sakura-flight var(--dur, 3.4s) linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+    @keyframes sakura-flight {
+      0% { top: -12%; opacity: 0; transform: translateX(-25px) rotate(var(--rot)); }
+      12% { opacity: .9; }
+      36% { transform: translateX(32px) rotate(calc(var(--rot) + 110deg)) rotateY(40deg); }
+      68% { opacity: .8; transform: translateX(-8px) rotate(calc(var(--rot) + 230deg)) rotateY(-35deg); }
+      100% { top: 110%; opacity: 0; transform: translateX(70px) rotate(calc(var(--rot) + 360deg)); }
+    }
+
+    /* 2. Violet diamond releases branching, black ink markings. */
+    .byakugou-wrap { position: absolute; inset: 0; opacity: 0; transition: opacity .28s; }
+    .byakugou-seal { display: block; width: 100%; height: 100%; }
+    .seal-core { fill: #8b3bb0; stroke: #482050; stroke-width: 1.5; transform-origin: 160px 29px; transform: scale(.3); transition: transform .4s ease; }
+    .seal-lines { fill: none; stroke: #20131f; stroke-width: 3.2; stroke-linejoin: round; stroke-linecap: round; }
+    .seal-lines path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset .85s cubic-bezier(.25,.65,.3,1); }
+    .seal-lines .branch { stroke-width: 2; transition-delay: .18s; }
+    .project-card--byakugou:is(:hover, :focus-visible) .byakugou-wrap { opacity: .9; }
+    .project-card--byakugou:is(:hover, :focus-visible) .seal-core { transform: scale(1); }
+    .project-card--byakugou:is(:hover, :focus-visible) .seal-lines path { stroke-dashoffset: 0; }
+    .project-card--byakugou:is(:hover, :focus-visible) { border-color: #452039; box-shadow: var(--shadow), 0 0 22px #7e22ce16; }
+
+    /* 3. Emerald edge glow, moving chakra wisps and rising light motes. */
+    .healing-aura { position: absolute; inset: 0; opacity: 0; transition: opacity .4s;
+      background: radial-gradient(ellipse at 50% 23%, #6ee7b73d, transparent 60%);
+      box-shadow: inset 0 0 28px #10b98155, inset 0 0 8px #34d39988; }
+    .healing-aura::before, .healing-aura::after { content: ''; position: absolute; inset: -35%;
+      background: conic-gradient(from 0deg, transparent 0 20%, #10b98155 27%, transparent 35% 65%, #6ee7b766 73%, transparent 82%);
+      filter: blur(22px); opacity: .6;
+      mask-image: radial-gradient(ellipse, transparent 32%, #000 57%); }
+    .healing-aura::after { transform: rotate(110deg); }
+    .chakra-mote { position: absolute; bottom: -5%; left: var(--left); width: 4px; height: 7px; border-radius: 50%;
+      background: #b5ffe3; box-shadow: 0 0 7px 3px #10b98188; opacity: 0; }
+    .project-card--healing:is(:hover, :focus-visible) .healing-aura { opacity: 1; animation: chakra-breathe 2.6s ease-in-out infinite; }
+    .project-card--healing:is(:hover, :focus-visible) .healing-aura::before { animation: chakra-swirl 7s linear infinite; }
+    .project-card--healing:is(:hover, :focus-visible) .healing-aura::after { animation: chakra-swirl 9s linear infinite reverse; }
+    .project-card--healing:is(:hover, :focus-visible) .chakra-mote { animation: chakra-rise var(--dur, 3s) ease-out infinite; animation-delay: var(--delay, 0s); }
+    .project-card--healing:is(:hover, :focus-visible) { border-color: #059669; box-shadow: var(--shadow), 0 0 22px #10b98166, 0 0 48px #10b98122; }
+    @keyframes chakra-breathe { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+    @keyframes chakra-swirl { to { transform: rotate(360deg); } }
+    @keyframes chakra-rise {
+      0% { bottom: -5%; opacity: 0; transform: translateX(0) scale(.6); }
+      20% { opacity: .85; } 75% { opacity: .5; }
+      100% { bottom: 105%; opacity: 0; transform: translateX(var(--drift, 15px)) scale(.2); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .project-card, .project-card * { transition: none !important; }
+      .project-card:is(:hover, :focus-visible) { transform: none; }
+      .card-fx *, .card-fx *::before, .card-fx *::after { animation: none !important; }
+      .project-card--petals:is(:hover, :focus-visible) .petal { top: var(--rest); opacity: .65; transform: rotate(var(--rot)); }
+    }
+
+    .project-thumb {
+      position: relative;
+      z-index: 2;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .project-card--petals .petal,
+      .project-card--byakugou .byakugou-wrap,
+      .project-card--healing .healing-aura {
+        animation: none !important;
+      }
+
+      .project-card--petals:hover .petal,
+      .project-card--petals:focus-visible .petal {
+        opacity: 0.7;
+        transform: translateY(20%) rotate(var(--rot, 40deg));
+      }
+
+      .project-card--byakugou:hover .byakugou-wrap,
+      .project-card--byakugou:focus-visible .byakugou-wrap {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .project-card--healing:hover .healing-aura,
+      .project-card--healing:focus-visible .healing-aura {
+        opacity: 0.75;
+      }
+    }
+
     .project-thumb {
       aspect-ratio: 16 / 10;
-      background: linear-gradient(135deg, var(--accent-soft), #f5e6b8);
+      background: linear-gradient(135deg, var(--accent-soft), #fbcfe8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -228,7 +338,7 @@
     }
 
     .project-thumb--soon {
-      background: linear-gradient(135deg, #ede4c4, #f7f0d4);
+      background: linear-gradient(135deg, #fce7f3, #fdf2f8);
     }
 
     .project-thumb img {
@@ -266,7 +376,7 @@
       color: var(--accent);
     }
 
-    .project-card--muted .cta { color: var(--muted); }
+    .project-card--soon .cta { color: var(--muted); }
 
     .detail {
       padding: 3rem 0 4rem;
@@ -355,7 +465,7 @@
       font-family: ui-monospace, "Cascadia Code", monospace;
       font-size: 0.88rem;
       background: var(--ink);
-      color: #f5efd8;
+      color: #fce7f3;
       padding: 1rem 1.1rem;
       border-radius: 8px;
       overflow-x: auto;
@@ -406,7 +516,27 @@
   <section class="projects wrap" aria-labelledby="proyectos-titulo">
     <h2 class="section-title" id="proyectos-titulo" data-i18n="projects-heading"></h2>
     <div class="project-grid">
-      <a class="project-card" href="#proyecto-1">
+      <a class="project-card project-card--petals" href="#proyecto-1">
+        <div class="card-fx" aria-hidden="true">
+          <span class="petal" style="--left:3%;--rest:5%;--rot:0deg;--size:10px;--dur:3.20s;--delay:0.00s"></span>
+          <span class="petal" style="--left:32%;--rest:24%;--rot:37deg;--size:11px;--dur:3.48s;--delay:-0.27s"></span>
+          <span class="petal" style="--left:61%;--rest:43%;--rot:74deg;--size:12px;--dur:3.76s;--delay:-0.54s"></span>
+          <span class="petal" style="--left:90%;--rest:62%;--rot:111deg;--size:13px;--dur:4.04s;--delay:-0.81s"></span>
+          <span class="petal" style="--left:25%;--rest:81%;--rot:148deg;--size:14px;--dur:4.32s;--delay:-1.08s"></span>
+          <span class="petal" style="--left:54%;--rest:15%;--rot:185deg;--size:10px;--dur:3.20s;--delay:-1.35s"></span>
+          <span class="petal" style="--left:83%;--rest:34%;--rot:222deg;--size:11px;--dur:3.48s;--delay:-1.62s"></span>
+          <span class="petal" style="--left:18%;--rest:53%;--rot:259deg;--size:12px;--dur:3.76s;--delay:-1.89s"></span>
+          <span class="petal" style="--left:47%;--rest:72%;--rot:296deg;--size:13px;--dur:4.04s;--delay:-2.16s"></span>
+          <span class="petal" style="--left:76%;--rest:6%;--rot:333deg;--size:14px;--dur:4.32s;--delay:-2.43s"></span>
+          <span class="petal" style="--left:11%;--rest:25%;--rot:370deg;--size:10px;--dur:3.20s;--delay:-2.70s"></span>
+          <span class="petal" style="--left:40%;--rest:44%;--rot:407deg;--size:11px;--dur:3.48s;--delay:-2.97s"></span>
+          <span class="petal" style="--left:69%;--rest:63%;--rot:444deg;--size:12px;--dur:3.76s;--delay:-3.24s"></span>
+          <span class="petal" style="--left:4%;--rest:82%;--rot:481deg;--size:13px;--dur:4.04s;--delay:-3.51s"></span>
+          <span class="petal" style="--left:33%;--rest:16%;--rot:518deg;--size:14px;--dur:4.32s;--delay:-3.78s"></span>
+          <span class="petal" style="--left:62%;--rest:35%;--rot:555deg;--size:10px;--dur:3.20s;--delay:-4.05s"></span>
+          <span class="petal" style="--left:91%;--rest:54%;--rot:592deg;--size:11px;--dur:3.48s;--delay:-4.32s"></span>
+          <span class="petal" style="--left:26%;--rest:73%;--rot:629deg;--size:12px;--dur:3.76s;--delay:-4.59s"></span>
+        </div>
         <div class="project-thumb">
           <!-- <img src="assets/proyecto-1-thumb.png" alt="" data-i18n-attr="p1-thumb-alt:alt" /> -->
           <span data-i18n="p1-thumb-placeholder"></span>
@@ -418,7 +548,24 @@
         </div>
       </a>
 
-      <a class="project-card project-card--muted" href="#proyecto-2">
+      <a class="project-card project-card--byakugou project-card--soon" href="#proyecto-2">
+        <div class="card-fx" aria-hidden="true">
+          <div class="byakugou-wrap">
+            <svg class="byakugou-seal" viewBox="0 0 320 400" preserveAspectRatio="none" aria-hidden="true">
+              <g class="seal-lines">
+                <path pathLength="1" d="M152 29 C140 32 139 47 125 46 C109 44 104 63 86 65 C66 67 49 70 37 92 C24 112 21 127 23 145 C26 167 27 184 23 198 C18 216 12 226 12 251 C12 276 8 300 12 320 C16 341 24 350 23 372 C22 384 21 392 23 400" />
+                <path pathLength="1" d="M168 29 C180 32 181 47 195 46 C211 44 216 63 234 65 C254 67 271 70 283 92 C296 112 299 127 297 145 C294 167 293 184 297 198 C302 216 308 226 308 251 C308 276 312 300 308 320 C304 341 296 350 297 372 C298 384 299 392 297 400" />
+                <path pathLength="1" d="M160 16 C157 10 158 5 160 0" />
+                <path class="branch" pathLength="1" d="M125 46 C126 25 114 12 104 0 M195 46 C194 25 206 12 216 0" />
+                <path class="branch" pathLength="1" d="M86 65 C74 57 74 41 52 39 C29 37 24 12 0 14 M234 65 C246 57 246 41 268 39 C291 37 296 12 320 14" />
+                <path class="branch" pathLength="1" d="M37 92 C20 89 8 82 0 63 M283 92 C300 89 312 82 320 63" />
+                <path class="branch" pathLength="1" d="M23 145 C27 157 42 159 40 177 C38 192 47 196 57 203 M297 145 C293 157 278 159 280 177 C282 192 273 196 263 203" />
+                <path class="branch" pathLength="1" d="M12 251 C14 265 6 270 0 277 M308 251 C306 265 314 270 320 277 M23 372 C15 374 6 376 0 382 M297 372 C305 374 314 376 320 382" />
+              </g>
+              <path class="seal-core" d="M160 14 L169 29 L160 44 L151 29 Z" />
+            </svg>
+          </div>
+        </div>
         <div class="project-thumb project-thumb--soon">
           <span data-i18n="soon-thumb"></span>
         </div>
@@ -429,7 +576,20 @@
         </div>
       </a>
 
-      <a class="project-card project-card--muted" href="#proyecto-3">
+      <a class="project-card project-card--healing project-card--soon" href="#proyecto-3">
+        <div class="card-fx" aria-hidden="true">
+          <div class="healing-aura"></div>
+          <span class="chakra-mote" style="--left:5%;--dur:2.6s;--delay:0.0s;--drift:12px"></span>
+          <span class="chakra-mote" style="--left:94%;--dur:3.1s;--delay:-0.36s;--drift:-12px"></span>
+          <span class="chakra-mote" style="--left:12%;--dur:3.6s;--delay:-0.72s;--drift:12px"></span>
+          <span class="chakra-mote" style="--left:87%;--dur:2.6s;--delay:-1.08s;--drift:-12px"></span>
+          <span class="chakra-mote" style="--left:20%;--dur:3.1s;--delay:-1.44s;--drift:12px"></span>
+          <span class="chakra-mote" style="--left:79%;--dur:3.6s;--delay:-1.7999999999999998s;--drift:-12px"></span>
+          <span class="chakra-mote" style="--left:8%;--dur:2.6s;--delay:-2.16s;--drift:12px"></span>
+          <span class="chakra-mote" style="--left:91%;--dur:3.1s;--delay:-2.52s;--drift:-12px"></span>
+          <span class="chakra-mote" style="--left:32%;--dur:3.6s;--delay:-2.88s;--drift:12px"></span>
+          <span class="chakra-mote" style="--left:66%;--dur:2.6s;--delay:-3.2399999999999998s;--drift:-12px"></span>
+        </div>
         <div class="project-thumb project-thumb--soon">
           <span data-i18n="soon-thumb"></span>
         </div>
